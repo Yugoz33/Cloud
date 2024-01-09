@@ -240,6 +240,22 @@ users:
 runcmd:
   - docker run -d -p 80:80 nginx
 ```
+```bash
+ az vm create -n tpnginx --resource-group efreitp2 --image "/subscriptions/15934968-657a-44fa-ae2b-c59094e54274/resourceGroups/efreitp2/providers/Microsoft.Compute/galleries/efreigallery/images/efreidef/versions/1.0.0" --custom-data "C:\cloud tp\Cloud\cloud-init.txt" --security-type TrustedLaunch
+```
+```bash
+hugo@tpnginx:~$ sudo docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS         PORTS                               NAMES
+8842921d76a2   nginx     "/docker-entrypoint.…"   11 seconds ago   Up 8 seconds   0.0.0.0:80->80/tcp, :::80->80/tcp   amazing_sublime
+```
+
+🌞 Avec une comande az, créez une nouvelle machine
+
+elle doit utiliser notre image custom
+elle doit fournir votre fichier cloud-init.txt à la VM pour que le service cloud-init applique son contenu
+une fois qu'elle a démarré, vérifiez que le serveur web tourne
+![machine1](fini1.png)
+
 
 
 
