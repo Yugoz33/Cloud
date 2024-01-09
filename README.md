@@ -109,4 +109,121 @@ utilisez l'option --custom-data /path/to/cloud-init.txt
 az>> vm create --name tpcloudinit --resource-group efreitp2 --image Ubuntu2204 --custom-data "C:\cloud tp\Cloud\cloud-init.txt"
 ```
 
+🌞 Vérifier que cloud-init a bien fonctionné
+
+connectez-vous en SSH à la VM nouvellement créée
+vous devriez observer qu'un nouvel utilisateur a été créé, avec le bon password et la bonne clé
+```
+PS C:\Users\hugoc> ssh hugo@51.103.69.15
+Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 6.2.0-1018-azure x86_64)
+```
+```
+hugo@tpcloudinit:~$ su hugo
+Password:
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+```
+I. Création image custom
+
+1. Créer une VM
+🌞 Créez une VM
+
+uniquement avec la commande az
+
+OS de votre choix
+
+le Ubuntu proposé par défaut par Azure c'est très bien
+on sait que c'est stable, pour notre travail ici c'est cool
+
+
+conf ajoutée à la création :
+
+un user
+une clé publique pour s'y connecter
+```bash
+az>> vm create --name hugo --resource-group efreitp2 --image Ubuntu2204 --admin-username hugo --ssh-key-values "C:\Users\hugoc\.ssh\id_rsa.pub"
+```
+🌞 Installer docker à la machine
+
+suivez les instructions de la doc officielle
+assurez-vous que le service démarre automatiquement lorsque la machine démarre (avec une commande systemctl)
+```
+hugo@hugo:~$ docker --version
+Docker version 24.0.2, build cb74dfc
+hugo@hugo:~$ sudo systemctl enable docker
+Synchronizing state of docker.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable docker
+hugo@hugo:~$
+```
+🌞 Améliorer la configuration du serveur SSH
+
+on pense surtout à la sécurité ici
+je vous laisse trouver un bon guide sur internet, hésitez pas à m'appeler pour me demander mon avis !
+
+j'ai suivi se tuto
+```
+https://www.digitalocean.com/community/tutorials/how-to-harden-openssh-on-ubuntu-20-04
+```
+🌞 Une fois que tout est fait : généraliser la VM
+
+ce qu'on appelle "généraliser" c'est le fait de la remettre dans un état comme si elle n'avait jamais été lancée
+comme ça, elle pourra servir de base à la création d'autres VMs (c'est le but !)
+les étapes :
+
+reset la conf réseau
+on reset cloud-init pour qu'il se relance au prochain boot
+on reset l'agent Azure (wagent) pour qu'il se lance au prochaine boot comme un premier boot
+on supprime l'historique de commandes
+```
+# Suppression des confs réseau qui auraient pu être créées au premier boot
+sudo rm -f /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg /etc/cloud/cloud.cfg.d/curtin-preserve-sources.cfg /etc/cloud/cloud.cfg.d/99-installer.cfg /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg
+sudo rm -f /etc/cloud/ds-identify.cfg
+sudo rm -f /etc/netplan/*.yaml
+
+# Conf déjà effectuée normalement mais au cas où : on demande à l'agent Azure d'utiliser cloud-init
+sudo sed -i 's/Provisioning.Enabled=y/Provisioning.Enabled=n/g' /etc/waagent.conf
+sudo sed -i 's/Provisioning.UseCloudInit=n/Provisioning.UseCloudInit=y/g' /etc/waagent.conf
+sudo sed -i 's/ResourceDisk.Format=y/ResourceDisk.Format=n/g' /etc/waagent.conf
+sudo sed -i 's/ResourceDisk.EnableSwap=y/ResourceDisk.EnableSwap=n/g' /etc/waagent.conf
+cat <<EOF | sudo tee -a /etc/waagent.conf
+Provisioning.Agent=auto
+EOF
+
+# On reset cloud-init
+sudo cloud-init clean --logs --seed
+sudo rm -rf /var/lib/cloud/
+
+# On reset l'agent Azure
+sudo systemctl stop walinuxagent.service
+sudo rm -rf /var/lib/waagent/
+sudo rm -f /var/log/waagent.log
+sudo waagent -force -deprovision+user
+
+# Suppression de l'historique de commande
+sudo rm -f ~/.bash_history
+```
+🌞 Pour ça, suivez les commandes az suivantes :
+```
+az vm  create --resource-group efreitp2 --name prout --image "/subscriptions/15934968-657a-44fa-ae2b-c59094e54274/resourceGroups/efreitp2/providers/Microsoft.Compute/ga
+lleries/efreigallery/images/efreidef/versions/1.0.0" --security-type TrustedLaunch --ssh-key-values "C:\Users\hugoc.ssh\id_rsa.pub" --admin-username hugo
+```
+
+
+
+🌞 Sur votre PC, écrivez un fichier cloud-init.txt
+
+réutiliser le fichier que je vous ai fourni plus haut pour créer un user
+ajoutez à ce fichier ce qu'il faut pour que cloud-init lance un conteneur NGINX :
+
+ainsi, dès que la VM pop, PAF ! Un serveur web déjà dispo dans un conteneur
+une ligne très simple suffit, par exemple :
+
+
+```bash
+systemctl start docker 
+docker run -d -p 80:80 nginx
+```
+
+
+
 
