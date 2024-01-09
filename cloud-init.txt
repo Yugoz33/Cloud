@@ -1,0 +1,12 @@
+#cloud-config
+users:
+  - name: hugo
+    primary_group: hugo
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    passwd: $6$B.tYaooC0/jQHtbC$O5LDuFNc3NMClzz9EIDuu8c0wXT6ib.fC5HRFIlCFqAZEXIg6rSadIUmL3o88LVzmVr5E1aI4K.XceDxrgPgF.
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDa6I8jCpILOkzG9lDZpXluwt3+hV2rhq9Mf9eHQU4DpOKfNT3tzH0mflGZyUwbETwy3cxHERbmCDdKuDtIEMfu3RRJ8EOx0H9FxUTocuSxo9SZCt1ta64nAJqkheDzIZAA1FdUOT5AS2L9zzOw6JZdCx0mgN0kIdB5SEvii0T5nZ3nFdJ4WZ9ftgm/R37isyk7mGh0kIWLMuiQMJNkJ5ShskG2PpDXXxEIrA+nV2o2u5FkRcFVQvcfVV3FAKpan2zghwxXi1LSTFaQWlVPqRueMZhCcH74khSmxLYqpIHSrw3Q6PgZ5B6yJO8ghcCurWWFCCfS6Dvt+uiGIkhvIDQIypsemBJJxvoxHgZegOyHmPFDcOlPNY0uIijnVfVQGMpa/QDxLe5xaznXK7RpElDl20hECJlaKFgFxhvARkkBX0Pq73oySvw+3w2Q8J1t+2Q0Qj+BnC6KTPNepn0S/5CEtTcIKHsjY5yuVotdANPDpS8FUKM9DAfVou3nZi/PFr/4Exm7F5t7v6vmSiYvLJmtRbsPMO7stxlxlVVkDlR2j/zde5ueYimjBAupuXWBQaSeqA8clIge09Ew40tdH1zhkEeqVI65MkWMX5IOi0GYv0oOhnUbh0g4xla8l6MYe4TZM8FFgcoNdhtEXm2qt4g/aVY7mfF3V+wWSEN5gDOsbQ== hugoc@Acer-Yugoz
+
